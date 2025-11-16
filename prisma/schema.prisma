@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  reviews   Review[]
+  watchlist Watchlist[]
+  createdAt DateTime @default(now())
+}
+
+model Movie {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?
+  releaseDate DateTime?
+  duration    Int?
+  posterUrl   String?
+  genres      MovieGenre[]
+  actors      MovieActor[]
+  directorId  Int?
+  director    Director?  @relation(fields: [directorId], references: [id])
+  reviews     Review[]
+  watchBy     Watchlist[]
+  createdAt   DateTime   @default(now())
+}
+
+model Genre {
+  id      Int          @id @default(autoincrement())
+  name    String       @unique
+  movies  MovieGenre[]
+}
+
+model Actor {
+  id      Int          @id @default(autoincrement())
+  fullName String
+  movies   MovieActor[]
+}
+
+model Director {
+  id       Int       @id @default(autoincrement())
+  fullName String
+  movies   Movie[]
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String?
+  userId    Int
+  movieId   Int
+  user      User     @relation(fields: [userId], references: [id])
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Watchlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  movieId   Int
+  user      User     @relation(fields: [userId], references: [id])
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  addedAt   DateTime @default(now())
+}
+
+model MovieGenre {
+  movieId  Int
+  genreId  Int
+  movie    Movie @relation(fields: [movieId], references: [id])
+  genre    Genre @relation(fields: [genreId], references: [id])
+  @@id([movieId, genreId])
+}
+
+model MovieActor {
+  movieId Int
+  actorId Int
+  movie   Movie @relation(fields: [movieId], references: [id])
+  actor   Actor @relation(fields: [actorId], references: [id])
+  @@id([movieId, actorId])
+}
+
+model RevokedToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([expiresAt])
+}
