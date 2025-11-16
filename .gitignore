@@ -4,8 +4,27 @@ node_modules
 
 /generated/prisma
 
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
 # Cursor IDE files
 .cursor/
 .cursorignore
 CLAUDE.md
 .claude/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+npm-debug.log*
