@@ -4,11 +4,9 @@ import { isTokenBlacklisted } from "../services/tokenBlacklistService.js";
 
 export const authRequired = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies.accessToken;
 
-    if (!authHeader) throw createError(401, "Aucun token fourni");
-
-    const token = authHeader.split(" ")[1];
+    if (!token) throw createError(401, "Aucun token fourni");
 
     // Vérifier si le token est valide (JWT)
     const decoded = verifyAccessToken(token);

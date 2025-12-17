@@ -12,7 +12,7 @@ export const signupSchema = Joi.object({
   }),
   password: Joi.string()
   .min(8)
-  .pattern(new RegExp("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])"))
+  .pattern(new RegExp("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&.*:-])"))
   .required()
   .messages({
     "string.pattern.base": "Le mot de passe doit contenir 1 majuscule, 1 chiffre et 1 caractère spécial.",

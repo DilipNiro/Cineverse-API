@@ -22,6 +22,7 @@ dotenv.config();
 
 // Client Prisma
 import { PrismaClient } from "@prisma/client";
+import cookieParser from "cookie-parser";
 export const prisma = new PrismaClient();
 
 
@@ -31,8 +32,23 @@ const app = express();
 // Middlewares
 // ----------------------
 
-app.use(express.json());
-app.use(cors());
+app.use(express.json())
+app.use(cookieParser())
+
+const corsOptions = {
+  origin: 'http://localhost:5001',
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}
+app.use(cors(corsOptions))
+
+// ----------------------
+// Documentation Swagger
+// ----------------------
+swaggerDocs(app);
+
 app.use(helmet());
 app.use(morgan("dev"));
 
@@ -73,11 +89,6 @@ app.use("/logs", logRoutes);
 // ----------------------
 // Middleware d’erreurs global
 // ----------------------
-app.use(errorHandler);
-
-// ----------------------
-// Documentation Swagger
-// ----------------------
-swaggerDocs(app);
+app.use(errorHandler)
 
 export default app;
