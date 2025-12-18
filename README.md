@@ -276,29 +276,6 @@ Les tests couvrent :
 - Gestion de la watchlist
 - Gestion des genres, acteurs et réalisateurs
 
-## Architecture du Projet
-
-```
-CineVerseApi/
-├── src/
-│   ├── routes/          # Définition des endpoints
-│   ├── controllers/     # Réception des requêtes et appel aux services
-│   ├── services/        # Logique métier
-│   ├── middlewares/     # Auth, validation, logging, erreurs
-│   ├── models/          # Schémas MongoDB (Mongoose)
-│   ├── validators/      # Validation Joi
-│   ├── utils/           # Helpers (JWT, errors)
-│   ├── tests/           # Tests Jest + Supertest
-│   ├── swagger/         # Configuration Swagger
-│   ├── app.js           # Configuration Express
-│   └── server.js        # Point d'entrée
-├── prisma/
-│   └── schema.prisma    # Schéma PostgreSQL
-├── .env                 # Variables d'environnement
-├── package.json
-└── README.md
-```
-
 ## Fonctionnalités Principales
 
 ### Gestion des utilisateurs
@@ -342,4 +319,104 @@ CineVerseApi/
 - **Error Handling** : Middleware global de gestion d'erreurs
 - **Token Revocation** : Liste noire des tokens lors du logout
 
+## Analyse de Sécurité et Qualité de Code
 
+Cette section décrit les outils et les pratiques mis en place pour garantir la sécurité et la qualité du code de l'API CineVerse.
+
+### 🔐 Sécurité & HTTPS
+
+L'API est configurée pour forcer l'utilisation de HTTPS, garantissant que toutes les communications entre le client et le serveur sont chiffrées.
+
+**Comportement attendu :**
+
+*   **Redirection automatique :** Toute requête effectuée en `HTTP` est automatiquement redirigée vers `HTTPS` avec un code de statut `301 (Moved Permanently)`.
+    *   Requête `http://localhost:8081/movies` → Redirection vers `https://localhost:5000/movies`.
+*   **Communication sécurisée :** Une fois la connexion établie en HTTPS, toutes les données échangées (y compris les tokens d'authentification et les données sensibles) sont protégées contre les attaques de type "man-in-the-middle" (MITM).
+
+L'utilisation de HTTPS est cruciale pour assurer :
+-   **Confidentialité :** Les données ne peuvent être interceptées en clair.
+-   **Intégrité :** Les données ne peuvent être modifiées pendant le transport.
+-   **Authentification :** Le client a l'assurance qu'il communique avec le bon serveur.
+
+### Analyse statique – SonarQube
+
+Nous utilisons **SonarQube** pour l'analyse statique du code source. Cet outil nous aide à maintenir une haute qualité de code et à identifier les problèmes de sécurité avant même que l'application ne soit exécutée.
+
+**Objectif :** Détecter et corriger :
+-   **Bugs :** Erreurs potentielles dans le code.
+-   **Vulnerabilities :** Failles de sécurité exploitables (ex: injection SQL, XSS).
+-   **Security Hotspots :** Points du code nécessitant une revue de sécurité.
+-   **Code Smells :** Problèmes de maintenabilité et de qualité du code.
+
+**Prérequis :**
+-   [Docker](https://www.docker.com/)
+-   [Node.js](https://nodejs.org/)
+
+**Commandes pour lancer une analyse :**
+
+1.  **Démarrer le serveur SonarQube via Docker :**
+    ```bash
+    docker run -d --name sonarqube -p 9000:9000 sonarqube:lts-community
+    ```
+
+2.  **Lancer le scanner SonarQube :**
+    *Le projet est déjà pré-configuré avec `sonar-project.properties` et un script `sonar-project.cjs`.*
+    ```bash
+    npm run sonar
+    ```
+    *(Cette commande exécute `node sonar-project.cjs`, qui lance `sonar-scanner`)*
+
+> **Note :** L'API n'a pas besoin d'être en cours d'exécution pour que l'analyse statique fonctionne.
+
+### Analyse dynamique – OWASP ZAP
+
+Pour les tests de sécurité dynamiques (DAST), nous utilisons **OWASP ZAP (Zed Attack Proxy)**. ZAP agit comme un "pentester automatisé" en attaquant l'application en conditions réelles pour trouver des vulnérabilités.
+
+**Objectif :** Identifier des failles de sécurité pendant que l'application est en cours d'exécution, telles que :
+-   Mauvaise configuration des headers de sécurité.
+-   Problèmes liés à la configuration HTTPS/TLS.
+-   Exposition d'informations sensibles.
+-   Failles d'injection basiques.
+
+**Prérequis :**
+-   L'API doit être en cours d'exécution.
+-   [OWASP ZAP](https://www.zaproxy.org/) installé sur votre machine.
+
+**Étapes pour lancer une analyse :**
+
+1.  **Démarrez l'API CineVerse :**
+    ```bash
+    npm run dev
+    ```
+
+2.  **Lancez OWASP ZAP.**
+
+3.  **Utilisez le scan automatisé :**
+    -   Dans l'onglet "Quick Start", cliquez sur le bouton **Automated Scan**.
+    -   Dans le champ "URL to attack", entrez l'URL de base de l'API : `https://localhost:5000`.
+    -   Cliquez sur **Attack**.
+
+ZAP va alors explorer l'API et tenter d'exploiter diverses vulnérabilités. Les résultats seront affichés dans l'onglet "Alerts".
+
+## Architecture du Projet
+
+```
+CineVerseApi/
+├── src/
+│   ├── routes/          # Définition des endpoints
+│   ├── controllers/     # Réception des requêtes et appel aux services
+│   ├── services/        # Logique métier
+│   ├── middlewares/     # Auth, validation, logging, erreurs
+│   ├── models/          # Schémas MongoDB (Mongoose)
+│   ├── validators/      # Validation Joi
+│   ├── utils/           # Helpers (JWT, errors)
+│   ├── tests/           # Tests Jest + Supertest
+│   ├── swagger/         # Configuration Swagger
+│   ├── app.js           # Configuration Express
+│   └── server.js        # Point d'entrée
+├── prisma/
+│   └── schema.prisma    # Schéma PostgreSQL
+├── .env                 # Variables d'environnement
+├── package.json
+└── README.md
+```
