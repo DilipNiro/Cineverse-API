@@ -16,8 +16,6 @@ import directorRoutes from "./routes/directorRoutes.js";
 import logRoutes from "./routes/logRoutes.js";
 import { swaggerDocs } from "./swagger/swaggerConfig.js";
 
-
-
 dotenv.config();
 
 // Client Prisma
@@ -25,31 +23,60 @@ import { PrismaClient } from "@prisma/client";
 import cookieParser from "cookie-parser";
 export const prisma = new PrismaClient();
 
-
 const app = express();
 
 // ----------------------
 // Middlewares
 // ----------------------
 
-app.use(express.json())
-app.use(cookieParser())
+app.use(express.json());
+app.use(cookieParser());
 
 const corsOptions = {
-  origin: 'http://localhost:5001',
+  origin: "http://localhost:5001",
   credentials: true,
   optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}
-app.use(cors(corsOptions))
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use(cors(corsOptions));
 
 // ----------------------
 // Documentation Swagger
 // ----------------------
 swaggerDocs(app);
 
-app.use(helmet());
+// Configuration Helmet pour les headers de sécurité
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    strictTransportSecurity:
+      process.env.NODE_ENV === "production"
+        ? {
+            maxAge: 31536000,
+            includeSubDomains: true,
+            preload: true,
+          }
+        : false,
+    frameguard: {
+      action: "deny", // ou 'sameorigin'
+    },
+    xContentTypeOptions: true,
+    referrerPolicy: {
+      policy: "no-referrer",
+    },
+  })
+);
 app.use(morgan("dev"));
 
 // Limiteur de débit : limite les requêtes abusives
@@ -89,6 +116,6 @@ app.use("/logs", logRoutes);
 // ----------------------
 // Middleware d’erreurs global
 // ----------------------
-app.use(errorHandler)
+app.use(errorHandler);
 
 export default app;
