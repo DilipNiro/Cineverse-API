@@ -79,3 +79,12 @@ export const logout = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getCurrentUser = async (req, res, next) => {
+  try {
+    const user = await authService.getCurrentUser(req.user.id);
+    res.json(user);
+  } catch (err) {
+    next(err);
+  }
+}

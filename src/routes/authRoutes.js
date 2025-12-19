@@ -244,4 +244,6 @@ router.post("/refresh", authController.refreshToken);
  */
 router.post("/logout", authRequired, logAction("LOGOUT", "Auth"), authController.logout);
 
+router.get("/current", authRequired, authController.getCurrentUser);
+
 export default router;

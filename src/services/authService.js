@@ -4,6 +4,22 @@ import { createError } from "../utils/error.js";
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken, verifyAccessToken } from "../utils/jwt.js";
 import { isTokenBlacklisted, addToBlacklist } from "./tokenBlacklistService.js";
 
+export async function getCurrentUser(id) {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+    },
+  });
+
+  if (!user) throw createError(404, "Utilisateur non trouvé");
+  return user;
+}
+
+
 export const signup = async ({ name, email, password }) => {
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) throw createError(400, "Cet email est déjà utilisé");
